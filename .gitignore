@@ -1,0 +1,36 @@
+# ----------------------------------------------------------------------
+# 1. Dépendances & Build (Node.js)
+# ----------------------------------------------------------------------
+# Ne jamais versionner les modules NPM
+/node_modules/
+
+# Fichiers générés par l'OS ou le Build (comme le dossier 'dist' ou 'build')
+/dist/
+/build/
+
+# Ne pas versionner le lockfile si vous utilisez Yarn
+# (Mais vous utilisez npm, donc laissez package-lock.json versionné!)
+# yarn.lock 
+
+# ----------------------------------------------------------------------
+# 2. Configuration Spécifique à l'Environnement
+# ----------------------------------------------------------------------
+# Fichiers de configuration de l'IDE PhpStorm / IntelliJ
+/.idea/
+# Fichiers de cache
+*.iml
+
+# Fichiers de la base de données SQLite
+# (Souvent nécessaire si vous créez le fichier de BDD directement)
+*.sqlite
+*.db
+
+# Fichiers d'environnement (clés API, mots de passe, etc.)
+.env
+.env.local
+
+# ----------------------------------------------------------------------
+# 3. Cache du Système d'Exploitation (Windows/MacOS)
+# ----------------------------------------------------------------------
+.DS_Store
+Thumbs.db

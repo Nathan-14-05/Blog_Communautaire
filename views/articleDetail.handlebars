@@ -1,0 +1,39 @@
+<a href="/articles">Retour à la liste</a>
+
+<div class="article-detail">
+    <h1>{{article.title}}</h1>
+
+    <p class="meta">
+        Publié par <strong>{{article.author}}</strong>
+        le {{article.created_at}}
+    </p>
+
+    <div class="content">
+        <p>{{article.content}}</p>
+    </div>
+
+</div>
+
+
+{{!-- Contenu de la vue pour la suppression d'un articles --}}
+
+<hr>
+
+<h3>Zone d'administration</h3>
+
+<form action="/articles/delete/{{article.id}}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
+    <button type="submit" style="background-color: red; color: white;">Supprimer l'article</button>
+</form>
+
+
+{{!-- Contenu de la vue pour la mmodification d'un article --}}
+
+<hr>
+
+<h3>Zone d'administration</h3>
+
+<a href="/articles/edit/{{article.id}}">Modifier cet article</a>
+
+<form action="/articles/delete/{{article.id}}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?');">
+    <button type="submit" style="background-color: red; color: white;">Supprimer l'article</button>
+</form>

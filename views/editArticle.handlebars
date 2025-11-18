@@ -1,0 +1,20 @@
+<!-- En gros ce sera quasiement le meme formulaire que le "newArticle" mais juste avec
+  les champs déjà pré-remplis -->
+
+<h1>Modifier l'article : {{article.title}}</h1>
+
+<form action="/articles/edit/{{article.id}}" method="POST">
+
+    <label for="title">Titre :</label>
+    <input type="text" id="title" name="title" value="{{article.title}}" required>
+
+    <label for="content">Contenu :</label>
+    <textarea id="content" name="content" rows="6" required>{{article.content}}</textarea>
+
+    <label for="author">Auteur :</label>
+    <input type="text" id="author" name="author" value="{{article.author}}" required>
+
+    <button type="submit">Enregistrer les modifications</button>
+</form>
+
+<a href="/articles/{{article.id}}">Annuler et revenir</a>

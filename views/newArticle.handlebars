@@ -1,0 +1,15 @@
+<h1>Créer un nouvel article</h1>
+
+<form action="/articles/new" method="POST">
+
+    <label for="title">Titre :</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="content">Contenu :</label>
+    <textarea id="content" name="content" rows="6" required></textarea>
+
+    <label for="author">Auteur :</label>
+    <input type="text" id="author" name="author" required>
+
+    <button type="submit">Publier l’article</button>
+</form>

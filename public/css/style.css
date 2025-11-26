@@ -1,87 +1,110 @@
 /* ----------------
-   RESET et Général
+   CLASSIQUE "ÉDITORIAL"
    ---------------- */
 body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    margin: 20px;
-    background-color: #f4f4f4;
-    color: #333;
+    font-family: Georgia, serif; /* Police à empattement pour un look classique */
+    line-height: 1.8;
+    margin: 0 auto;
+    max-width: 900px; /* Largeur limitée pour la lecture */
+    background-color: #FAF7F5; /* Fond crème */
+    color: #332D2D;
+    padding: 30px;
 }
 
-h1, h2 {
-    color: #007bff; /* Bleu pour les titres */
+header {
+    text-align: center;
+    margin-bottom: 50px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #A03C3C;
 }
 
-/* ----------------
-   Liens et Navigation
-   ---------------- */
-a {
-    color: #007bff;
-    text-decoration: none;
+nav a {
+    color: #332D2D;
+    margin: 0 10px;
+    font-style: italic;
+    font-size: 1.1em;
 }
 
-a:hover {
-    text-decoration: underline;
+h1 {
+    font-family: 'Times New Roman', serif;
+    font-size: 2.5em;
+    color: #332D2D;
+    text-align: center;
 }
 
-/* ----------------
-   Liste des Articles (/articles)
-   ---------------- */
+h2 {
+    color: #A03C3C;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+/* --- LISTE DES ARTICLES --- */
 ul {
     list-style: none;
     padding: 0;
 }
 
 li {
-    background: #fff;
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #FFFFFF;
+    margin-bottom: 25px;
+    padding: 20px 30px;
+    border-left: 5px solid #A03C3C; /* Accent de couleur */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
 }
 
-/* ----------------
-   Formulaires (newArticle, editArticle)
-   ---------------- */
+li:hover {
+    background-color: #FFF9F7;
+}
+
+a {
+    color: #A03C3C;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #7D2C2C;
+}
+
+/* --- FORMULAIRES ET BOUTONS --- */
 form {
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #FFFFFF;
+    padding: 30px;
+    border: 1px solid #E0DEDC;
     max-width: 600px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin: 20px auto;
 }
 
 input[type="text"],
 textarea {
     width: 100%;
     padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Pour que le padding soit inclus dans la largeur */
+    margin-bottom: 20px;
+    border: 1px solid #A03C3C;
+    border-radius: 0; /* Carré */
+    box-sizing: border-box;
 }
 
 button[type="submit"] {
-    background-color: #28a745; /* Vert pour le bouton de publication */
+    background-color: #A03C3C;
     color: white;
-    padding: 10px 15px;
+    padding: 10px 25px;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
-button[type="submit"]:hover {
-    background-color: #218838;
-}
-
-/* Style spécifique au bouton de suppression */
+/* --- SUPPRESSION --- */
 .article-detail form button {
-    background-color: #dc3545 !important;
+    background-color: #DC3545 !important;
+}
+
+footer {
+    text-align: center;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #D0D0D0;
 }

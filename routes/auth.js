@@ -138,4 +138,18 @@ router.get("/logout", (req, res) => {
         res.redirect('/'); // Redirection vers la page d'accueil
     });
 });
+
+// -----------------------------------------------------------------
+// Middleware de protection des routes
+// -----------------------------------------------------------------
+export function protectRoute(req, res, next) {
+    if (req.session.userId) {
+        // L'utilisateur est connecté (ID trouvé dans la session), on continue vers la route demandée
+        next();
+    } else {
+        // L'utilisateur n'est PAS connecté
+        // On le redirige vers la page de connexion
+        res.redirect('/login');
+    }
+}
 export default router;

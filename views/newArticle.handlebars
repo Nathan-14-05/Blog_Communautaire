@@ -8,8 +8,10 @@
     <label for="content">Contenu :</label>
     <textarea id="content" name="content" rows="6" required></textarea>
 
-    <label for="author">Auteur :</label>
-    <input type="text" id="author" name="author" required>
+    <p>
+        <strong>Auteur :</strong>
+        <span style="font-weight: bold; color: green;">{{userUsername}}</span>
+    </p>
 
     <button type="submit">Publier l’article</button>
 </form>

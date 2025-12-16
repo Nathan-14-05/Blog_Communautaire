@@ -1,16 +1,15 @@
-<h1>{{title}}</h1>
-
-{{#if articles.length}}
-    <ul>
-        {{#each articles}}
-            <li>
-                <h2><a href="/articles/{{this.id}}">{{this.title}}</a></h2>
-
-                <p>{{this.content}}</p>
-                <small>Par {{this.author}} - {{this.created_at}}</small>
-            </li>
-        {{/each}}
-    </ul>
-{{else}}
-    <p>Aucun article pour le moment.</p>
-{{/if}}
+<div class="container">
+    <h1>Flux de données</h1>
+    {{#each articles}}
+        <div class="article-card">
+            <h2>{{this.title}}</h2>
+            <p>Auteur: <span style="color: var(--neon-purple)">{{this.author}}</span></p>
+            <p>{{this.content}}</p>
+            <div class="actions">
+                <a href="/articles/{{this.id}}" class="btn">Lire la suite</a>
+            </div>
+        </div>
+    {{else}}
+        <p>Aucune transmission de données détectée.</p>
+    {{/each}}
+</div>

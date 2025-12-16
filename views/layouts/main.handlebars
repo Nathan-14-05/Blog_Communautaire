@@ -1,28 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <title>{{title}}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} | CYBER-BLOG</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<div class="page-wrapper">
+    <header>
+        <div class="nav-container">
+            <div class="logo">CYBER-BLOG</div>
+            <nav>
+                <a href="/">Accueil</a>
+                <a href="/articles">Articles</a>
+                {{#if userUsername}}
+                    <a href="/articles/new">Ajouter</a>
+                    <a href="/logout">Quitter</a>
+                {{else}}
+                    <a href="/login">Entrée</a>
+                    <a href="/register">Inscription</a>
+                {{/if}}
+            </nav>
+        </div>
+    </header>
 
-<header>
-    <nav>
-        <a href="/">Accueil</a> |
-        <a href="/articles">Articles</a> |
-        <a href="/articles/new">Ajouter un Article</a> |
-        <a href="/about">À Propos</a>
-    </nav>
-    <hr>
-</header>
+    <main class="content">
+        {{{body}}}
+    </main>
 
-{{{body}}}
-
-<footer>
-    <hr>
-    <p>&copy; 2025 Mini-Blog Communautaire - Projet BTS</p>
-</footer>
-
+    <footer>
+        <div class="container">
+            <p>© 2025 PROTOCOLE MINI-BLOG - SECTION BTS</p>
+        </div>
+    </footer>
+</div>
 </body>
 </html>

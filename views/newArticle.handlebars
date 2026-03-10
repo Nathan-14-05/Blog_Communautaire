@@ -13,5 +13,64 @@
         <span style="font-weight: bold; color: green;">{{userUsername}}</span>
     </p>
 
+    <div class="form-group">
+        <label>Mots-clés (Appuyez sur Entrée pour valider)</label>
+        <div id="tag-container" class="cyber-tag-input">
+            <input type="text" id="tag-field" placeholder="Ajouter un tag...">
+        </div>
+        <input type="hidden" name="tags" id="hidden-tags">
+    </div>
+
     <button type="submit">Publier l’article</button>
 </form>
+
+<script>
+    const tagField = document.getElementById('tag-field');
+    const tagContainer = document.getElementById('tag-container');
+    const hiddenTags = document.getElementById('hidden-tags');
+    let tagsList = [];
+
+    // Écouteur de touche sur le champ de saisie
+    tagField.addEventListener('keydown', (e) => {
+        // Si l'utilisateur appuie sur "Entrée"
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Empêche de valider tout le formulaire
+
+            const val = tagField.value.trim().toLowerCase();
+
+            // On vérifie que le mot n'est pas vide et n'est pas déjà dans la liste
+            if (val && !tagsList.includes(val)) {
+                tagsList.push(val);
+                createTagBadge(val);
+                tagField.value = ''; // On vide le champ
+                updateHiddenInput(); // On met à jour le champ caché
+            }
+        }
+    });
+
+    // Fonction pour créer le badge visuel (le rectangle bleu)
+    function createTagBadge(text) {
+        const badge = document.createElement('div');
+        badge.className = 'tag-badge';
+        // Le "×" permet de supprimer le tag
+        badge.innerHTML = `${text} <span onclick="removeTag('${text}', this)">×</span>`;
+
+        // On insère le badge juste avant l'input de texte
+        tagContainer.insertBefore(badge, tagField);
+    }
+
+    // Fonction pour supprimer un tag
+    window.removeTag = (text, element) => {
+        // On retire le mot de notre tableau JS
+        tagsList = tagsList.filter(t => t !== text);
+        // On retire l'élément visuel
+        element.parentElement.remove();
+        // On met à jour le champ caché pour le serveur
+        updateHiddenInput();
+    };
+
+    // Transforme le tableau ['test', 'bts'] en chaîne "test,bts"
+    function updateHiddenInput() {
+        hiddenTags.value = tagsList.join(',');
+    }
+</script>

@@ -1,58 +1,42 @@
 // Routes dédiées aux articles
-
 import express from "express";
 import { initDb } from "../models/db.js";
-import e from "express";
 // Import du middleware de protection (le chemin doit pointer vers auth.js)
 import { protectRoute } from './auth.js';
 
 const router = express.Router();
 
+/* - - - - - - - - - - - - - - Récapitulatif du CRUD complet - - - - - - - - - - - -
+GET / : Lire la liste
+GET /search : Rechercher par mots-clés (Scanner)  <-- NOUVEAU
+GET /:id : Lire un seul article (détail)
+GET /new : Afficher le formulaire de création
+POST /new : Créer l'article (avec Tags)           <-- MIS À JOUR
+GET /edit/:id : Afficher le formulaire d'édition
+POST /edit/:id : Modifier l'article (Update)
+POST /delete/:id : Supprimer l'article (Delete)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+// ---------------- 1. LIRE LA LISTE DES ARTICLES ----------------
 router.get("/", async (req, res) => {
     const db = await initDb();
     const articles = await db.all("SELECT * FROM articles ORDER BY created_at DESC");
-
     res.render("articles", { title: "Tous les articles", articles });
 });
 
-/* - - - - - - - - - - - - - - Récapitulatif du CRUD complet - - - - - - - - - - - -
 
-GET / : Lire la liste
-
-GET /:id : Lire un seul article (détail)
-
-GET /new : Afficher le formulaire de création
-
-POST /new : Créer l'article
-
-GET /edit/:id : Afficher le formulaire d'édition
-
-POST /edit/:id : Modifier l'article (Update)
-
-POST /delete/:id : Supprimer l'article (Delete)
-
-
- */
-
-
-
-// ---------------- ON AFFICHE LE FORMULAIRE POUR AJOUTER UN ARTICLE ----------------
-
-// Afficher le formulaire pour ajouter un article
+// ---------------- 2. ON AFFICHE LE FORMULAIRE POUR AJOUTER UN ARTICLE ----------------
 router.get("/new", protectRoute, (req, res) => {
     res.render("newArticle", { title: "Créer un nouvel article" });
 });
 
 
-// ---------------- ON GERE L'INSERTION DANS LA BDD ----------------
-
-// Traiter l'envoi du formulaire (insertion dans la BDD)
+// ---------------- 3. ON GÈRE L'INSERTION DANS LA BDD (AVEC TAGS) ----------------
 router.post("/new", protectRoute, async (req, res) => {
-    const { title, content } = req.body;
-
-    // // On prend l'auteur de la session (username), PAS du formulaire
+    // On récupère title, content ET tags du formulaire
+    const { title, content, tags } = req.body;
     const author = req.session.username;
-    const user_id = req.session.userId; // <-- AJOUT CRITIQUE
+    const user_id = req.session.userId;
 
     if (!title || !content) {
         return res.status(400).send("Tous les champs sont obligatoires.");
@@ -60,12 +44,38 @@ router.post("/new", protectRoute, async (req, res) => {
 
     try {
         const db = await initDb();
-        await db.run(
+
+        // A. Insertion de l'article dans la table 'articles'
+        const result = await db.run(
             "INSERT INTO articles (title, content, author, user_id) VALUES (?, ?, ?, ?)",
             [title, content, author, user_id]
         );
 
-        // Après l'insertion, on redirige vers la liste
+        // On récupère l'ID de l'article qu'on vient de créer pour lier les tags
+        const articleId = result.lastID;
+
+        // B. Gestion des mots-clés (Système d'indexation E5)
+        if (tags && tags.trim() !== "") {
+            // On transforme la chaîne "tech, bts" en tableau ["tech", "bts"]
+            const tagArray = tags.split(',').map(t => t.trim().toLowerCase());
+
+            for (const tagName of tagArray) {
+                if (tagName === "") continue;
+
+                // On insère le tag s'il n'existe pas encore (IGNORE évite les erreurs de doublons)
+                await db.run("INSERT OR IGNORE INTO tags (name) VALUES (?)", [tagName]);
+
+                // On récupère l'ID du tag
+                const tag = await db.get("SELECT id FROM tags WHERE name = ?", [tagName]);
+
+                // On crée la liaison dans la table pivot 'article_tags'
+                await db.run(
+                    "INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)",
+                    [articleId, tag.id]
+                );
+            }
+        }
+
         res.redirect("/articles");
     } catch (error) {
         console.error(error);
@@ -73,130 +83,127 @@ router.post("/new", protectRoute, async (req, res) => {
     }
 });
 
-// ---------------- ON AFFICHE UN ARTICLE PAR SON ID ----------------
 
-// Afficher un article détaillé par son ID
-router.get("/:id", async (req, res) => {
-    // 1. Récupération de l'ID depuis l'URL
-    const articleId = req.params.id;
+// ---------------- 4. MOTEUR DE RECHERCHE (SCANNER PAR PERTINENCE) ----------------
+// NOTE IMPORTANTE : Cette route doit être AVANT /:id sinon Express confond "search" avec un ID.
+router.get("/search", async (req, res) => {
+    const queryTags = req.query.tags;
+
+    if (!queryTags) return res.redirect("/articles");
+
+    const searchTerms = queryTags.split(',').map(tag => tag.trim().toLowerCase());
+    const totalKeywords = searchTerms.length;
 
     try {
         const db = await initDb();
 
-        // 2. Requête pour sélectionner UN SEUL article
-        // .get() est utilisé pour un résultat unique, et la clause WHERE filtre par ID
-        const article = await db.get(
-            "SELECT * FROM articles WHERE id = ?",
-            [articleId]
-        );
+        // Requête SQL complexe pour calculer la compatibilité en %
+        const sql = `
+            SELECT a.*, 
+                   COUNT(t.name) as nb_match,
+                   (CAST(COUNT(t.name) AS FLOAT) / ?) * 100 as relevance
+            FROM articles a
+            JOIN article_tags at ON a.id = at.article_id
+            JOIN tags t ON at.tag_id = t.id
+            WHERE t.name IN (${searchTerms.map(() => '?').join(',')})
+            GROUP BY a.id
+            ORDER BY relevance DESC
+        `;
+
+        const articles = await db.all(sql, [totalKeywords, ...searchTerms]);
+
+        res.render("articles", {
+            articles,
+            searchQuery: queryTags,
+            isSearch: true,
+            title: "Résultat du Scan"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erreur lors du scan du réseau.");
+    }
+});
+
+
+// ---------------- 5. ON AFFICHE UN ARTICLE PAR SON ID ----------------
+router.get("/:id", async (req, res) => {
+    const articleId = req.params.id;
+    try {
+        const db = await initDb();
+        const article = await db.get("SELECT * FROM articles WHERE id = ?", [articleId]);
 
         if (article) {
-            // 3. Rendu de la vue avec les données de l'article trouvé
             res.render("articleDetail", { article: article, title: article.title });
         } else {
-            // Gérer le cas où l'article n'existe pas
             res.status(404).send("Article non trouvé.");
         }
     } catch (error) {
         console.error(error);
-        res.status(500).send("Erreur lors de la récupération de l'article.");
+        res.status(500).send("Erreur lors de la récupération.");
     }
 });
 
 
-// ---------------- ON GERE LA MODIFICATION D'UN ARTICLE ----------------
-
-// Afficher le formulaire d'édition pour un article spécifique
+// ---------------- 6. ON GÈRE LA MODIFICATION D'UN ARTICLE ----------------
 router.get("/edit/:id", protectRoute, async (req, res) => {
     const articleId = req.params.id;
-    const currentUserId = req.session.userId; // ID de l'utilisateur connecté
+    const currentUserId = req.session.userId;
 
     try {
         const db = await initDb();
-
-        // 1. VÉRIFICATION D'AUTORISATION
-        const article = await db.get("SELECT user_id FROM articles WHERE id = ?", [articleId]);
+        const article = await db.get("SELECT * FROM articles WHERE id = ?", [articleId]);
 
         if (!article || article.user_id !== currentUserId) {
-            return res.status(403).send("Accès refusé. Vous n'êtes pas autorisé à modifier cet article.");
+            return res.status(403).send("Accès refusé.");
         }
 
-        // 2. Exécution de la mise à jour (si l'autorisation est OK)
-
-        if (article) {
-            res.render("editArticle", { article: article, title: `Modifier ${article.title}` });
-        } else {
-            res.status(404).send("Article à modifier non trouvé.");
-        }
+        res.render("editArticle", { article: article, title: `Modifier ${article.title}` });
     } catch (error) {
-        console.error(error);
         res.status(500).send("Erreur lors du chargement de l'édition.");
     }
 });
 
-
-// Traiter l'envoi du formulaire d'édition (Mise à jour dans la BDD)
 router.post("/edit/:id", protectRoute, async (req, res) => {
     const articleId = req.params.id;
-    const currentUserId = req.session.userId; // ID de l'utilisateur connecté
+    const currentUserId = req.session.userId;
     const { title, content } = req.body;
-
-    if (!title || !content || !author) {
-        return res.status(400).send("Tous les champs sont obligatoires.");
-    }
 
     try {
         const db = await initDb();
-
-        // 1. Vérification d'autorisation avant la mise à jour
         const article = await db.get("SELECT user_id FROM articles WHERE id = ?", [articleId]);
 
         if (!article || article.user_id !== currentUserId) {
-            return res.status(403).send("Accès refusé. Vous n'êtes pas autorisé à modifier cet article.");
+            return res.status(403).send("Accès refusé.");
         }
 
-        // 2. Mise à jour (Seulement si l'autorisation est OK)
         await db.run(
             "UPDATE articles SET title = ?, content = ? WHERE id = ?",
             [title, content, articleId]
         );
-
         res.redirect(`/articles/${articleId}`);
-
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Erreur interne du serveur.");
+        res.status(500).send("Erreur lors de la modification.");
     }
 });
 
 
-
-
-// ---------------- ON GERE LA SUPPRESSION D'UN ARTICLE ----------------
-
-// Supprimer un article par son ID
+// ---------------- 7. ON GÈRE LA SUPPRESSION D'UN ARTICLE ----------------
 router.post("/delete/:id", protectRoute, async (req, res) => {
     const articleId = req.params.id;
-    const currentUserId = req.session.userId; // ID de l'utilisateur connecté
+    const currentUserId = req.session.userId;
 
     try {
         const db = await initDb();
-
-        // 1. Vérification d'autorisation avant la suppression
         const article = await db.get("SELECT user_id FROM articles WHERE id = ?", [articleId]);
 
         if (!article || article.user_id !== currentUserId) {
-            return res.status(403).send("Accès refusé. Vous n'êtes pas autorisé à supprimer cet article.");
+            return res.status(403).send("Accès refusé.");
         }
 
-        // 2. Suppression (Seulement si l'autorisation est OK)
         await db.run("DELETE FROM articles WHERE id = ?", [articleId]);
-
         res.redirect("/articles");
-
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Erreur interne du serveur.");
+        res.status(500).send("Erreur lors de la suppression.");
     }
 });
 

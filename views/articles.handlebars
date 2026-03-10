@@ -1,10 +1,32 @@
 <div class="container">
     <h1>Flux de données</h1>
+
+    <section class="search-section" style="width: 100%; max-width: 800px; margin-bottom: 40px;">
+        <form action="/articles/search" method="GET" class="search-box" style="display: flex; gap: 10px;">
+            <input type="text" name="tags" placeholder="Scanner par mots-clés (ex: bts, tech)..." required
+                   style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--neon-blue); color: white; padding: 10px; border-radius: 5px;">
+            <button type="submit" class="btn" style="width: auto; white-space: nowrap;">LANCER LE SCAN</button>
+        </form>
+        {{#if isSearch}}
+            <p style="margin-top: 10px; color: var(--neon-purple); font-family: 'Orbitron'; font-size: 0.8rem;">
+                RÉSULTATS POUR LE SCAN : "{{searchQuery}}"
+            </p>
+        {{/if}}
+    </section>
+
     {{#each articles}}
-        <div class="article-card">
+        <div class="article-card" style="position: relative;">
+
+            {{#if ../isSearch}}
+                <div class="relevance-badge">
+                    COMPATIBILITÉ : {{this.relevance}}%
+                </div>
+            {{/if}}
+
             <h2>{{this.title}}</h2>
             <p>Auteur: <span style="color: var(--neon-purple)">{{this.author}}</span></p>
             <p>{{this.content}}</p>
+
             <div class="actions">
                 <a href="/articles/{{this.id}}" class="btn">Lire la suite</a>
             </div>

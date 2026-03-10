@@ -10,6 +10,8 @@ export const initDb = async () => {
         driver: sqlite3.Database
     });
 
+    await db.exec("PRAGMA foreign_keys = ON");
+
     console.log("✅ Connecté à la base SQLite !");
 
 
@@ -41,6 +43,28 @@ export const initDb = async () => {
             username TEXT UNIQUE NOT NULL, 
             password TEXT NOT NULL,         -- Stockera le HASH du mot de passe
             email TEXT UNIQUE NOT NULL
+        )
+    `);
+
+    // 3. NOUVELLE TABLE : Tags (Les mots-clés uniques)
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS tags (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE
+        )
+    `);
+
+
+    // 4. NOUVELLE TABLE : Article_Tags (La liaison Many-to-Many)
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS article_tags (
+            article_id INTEGER,
+            tag_id INTEGER,
+            PRIMARY KEY (article_id, tag_id),
+            -- Si on supprime un article, on supprime le lien vers le tag
+            FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
+            -- Si on supprime un tag, on supprime le lien vers l'article
+            FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
         )
     `);
 

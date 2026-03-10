@@ -211,3 +211,74 @@ footer {
     color: var(--bg-color);
     box-shadow: 0 0 10px var(--neon-blue);
 }
+
+/* Barre de recherche darticles */
+
+/* Badge de compatibilité pour la recherche */
+.relevance-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(157, 80, 187, 0.2); /* Fond violet néon transparent */
+    border: 1px solid var(--neon-purple);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    text-shadow: 0 0 5px var(--neon-purple);
+    box-shadow: 0 0 10px rgba(157, 80, 187, 0.3);
+}
+
+/* Style pour la zone de recherche */
+.search-box input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Aspect Badge Neon des mots cles */
+
+.cyber-tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--neon-blue);
+    border-radius: 8px;
+    min-height: 45px;
+}
+
+.tag-badge {
+    background: rgba(0, 210, 255, 0.2);
+    color: var(--neon-blue);
+    border: 1px solid var(--neon-blue);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    animation: neon-fade 0.3s ease;
+}
+
+.tag-badge span {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: var(--neon-red);
+}
+
+#tag-field {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    flex: 1;
+    min-width: 100px;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+@keyframes neon-fade {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
